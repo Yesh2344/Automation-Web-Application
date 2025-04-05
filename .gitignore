@@ -1,0 +1,9 @@
+# Automation Web App
+*.pyc
+__pycache__/
+instance/
+*.db
+logs/*
+logs/.gitkeep
+venv/
+.env.prod

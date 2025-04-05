@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Admin</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Admin Dashboard</h1>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Users</h5>
+                        <p class="card-text display-4">{{ users|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Admin Users</h5>
+                        <p class="card-text display-4">{{ users|selectattr('is_admin', 'equalto', true)|list|length }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Active Today</h5>
+                        <p class="card-text display-4">{{ users|selectattr('last_login', 'defined')|selectattr('last_login', 'ne', none)|list|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2>User Management</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Last Login</th>
+                                <th>Admin</th>
+                                <th>Tasks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
+                                <td>
+                                    <span class="badge {% if user.is_admin %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ 'Yes' if user.is_admin else 'No' }}
+                                    </span>
+                                </td>
+                                <td>{{ user.tasks.count() }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info">View</button>
+                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

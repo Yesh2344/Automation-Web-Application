@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to Automation Web App</h1>
+            <p class="lead">A powerful web application with automation features built with Flask and Celery.</p>
+            <hr class="my-4">
+            <p>This application allows you to create and manage automated tasks.</p>
+            {% if current_user.is_anonymous %}
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">Get Started</a>
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}" role="button">Login</a>
+            </p>
+            {% else %}
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('main.dashboard') }}" role="button">Go to Dashboard</a>
+                <a class="btn btn-success btn-lg" href="{{ url_for('main.new_task') }}" role="button">Create New Task</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if current_user.is_authenticated and tasks %}
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2>Your Recent Tasks</h2>
+        <div class="list-group">
+            {% for task in tasks[:5] %}
+            <a href="{{ url_for('main.task_detail', task_id=task.id) }}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ task.name }}</h5>
+                    <small>Status: <span class="badge {% if task.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">{{ task.status }}</span></small>
+                </div>
+                <p class="mb-1">{{ task.description|truncate(100) }}</p>
+                <small>Created: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </a>
+            {% endfor %}
+        </div>
+        {% if tasks|length > 5 %}
+        <div class="text-center mt-3">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">View All Tasks</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

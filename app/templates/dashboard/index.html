@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Analytics Dashboard</h1>
+        <p>Welcome to your task analytics dashboard, {{ current_user.username }}!</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Tasks</h5>
+                <p class="card-text display-4" id="total-tasks">-</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Completed Tasks</h5>
+                <p class="card-text display-4" id="completed-tasks">-</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Pending Tasks</h5>
+                <p class="card-text display-4" id="pending-tasks">-</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Failed Tasks</h5>
+                <p class="card-text display-4" id="failed-tasks">-</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>Task Status Distribution</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="status-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>Task Type Distribution</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="type-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>Task Priority Distribution</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="priority-chart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>Task Completion Trend (Last 7 Days)</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="trend-chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h2>Recent Tasks</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="recent-tasks-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch task statistics
+        fetch('/dashboard/api/task-stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update summary cards
+                const totalTasks = Object.values(data.status_data).reduce((a, b) => a + b, 0);
+                document.getElementById('total-tasks').textContent = totalTasks;
+                document.getElementById('completed-tasks').textContent = data.status_data.completed || 0;
+                document.getElementById('pending-tasks').textContent = data.status_data.pending || 0;
+                document.getElementById('failed-tasks').textContent = data.status_data.failed || 0;
+                
+                // Create status chart
+                const statusCtx = document.getElementById('status-chart').getContext('2d');
+                new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(data.status_data),
+                        datasets: [{
+                            data: Object.values(data.status_data),
+                            backgroundColor: [
+                                '#28a745', // completed - green
+                                '#ffc107', // pending - yellow
+                                '#17a2b8', // processing - blue
+                                '#dc3545'  // failed - red
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Create type chart
+                const typeCtx = document.getElementById('type-chart').getContext('2d');
+                new Chart(typeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data.type_data),
+                        datasets: [{
+                            data: Object.values(data.type_data),
+                            backgroundColor: [
+                                '#6f42c1', // general - purple
+                                '#fd7e14', // email - orange
+                                '#20c997', // file - teal
+                                '#e83e8c'  // api - pink
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Create priority chart
+                const priorityCtx = document.getElementById('priority-chart').getContext('2d');
+                new Chart(priorityCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.priority_data),
+                        datasets: [{
+                            label: 'Tasks by Priority',
+                            data: Object.values(data.priority_data),
+                            backgroundColor: [
+                                '#17a2b8', // Low - blue
+                                '#ffc107', // Medium - yellow
+                                '#dc3545'  // High - red
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Create trend chart
+                const trendCtx = document.getElementById('trend-chart').getContext('2d');
+                new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.completion_trend.labels,
+                        datasets: [{
+                            label: 'Completed Tasks',
+                            data: data.completion_trend.data,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching task statistics:', error));
+        
+        // Fetch recent tasks
+        fetch('/dashboard/api/recent-tasks')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#recent-tasks-table tbody');
+                tableBody.innerHTML = '';
+                
+                if (data.tasks.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="6" class="text-center">No tasks found</td>';
+                    tableBody.appendChild(row);
+                    return;
+                }
+                
+                data.tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    
+                    // Format date
+                    const createdDate = new Date(task.created_at);
+                    const formattedDate = createdDate.toLocaleDateString() + ' ' + createdDate.toLocaleTimeString();
+                    
+                    // Priority badge class
+                    let priorityBadgeClass = 'bg-info';
+                    if (task.priority === 2) priorityBadgeClass = 'bg-warning';
+                    if (task.priority === 3) priorityBadgeClass = 'bg-danger';
+                    
+                    // Priority label
+                    const priorityLabels = {1: 'Low', 2: 'Medium', 3: 'High'};
+                    const priorityLabel = priorityLabels[task.priority] || task.priority;
+                    
+                    // Status badge class
+                    let statusBadgeClass = 'bg-warning';
+                    if (task.status === 'completed') statusBadgeClass = 'bg-success';
+                    if (task.status === 'processing') statusBadgeClass = 'bg-info';
+                    if (task.status === 'failed') statusBadgeClass = 'bg-danger';
+                    
+                    row.innerHTML = `
+                        <td>${task.name}</td>
+                        <td>${task.task_type}</td>
+                        <td><span class="badge ${priorityBadgeClass}">${priorityLabel}</span></td>
+                        <td><span class="badge ${statusBadgeClass}">${task.status}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>
+                            <a href="/task/${task.id}" class="btn btn-sm btn-info">View</a>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching recent tasks:', error));
+    });
+</script>
+{% endblock %}

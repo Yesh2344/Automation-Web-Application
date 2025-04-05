@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Notification Settings</h1>
+        <p>Configure how and when you receive notifications about your automation tasks.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2>Email Notification Preferences</h2>
+            </div>
+            <div class="card-body">
+                <form id="notification-form">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="email-notifications" name="email_notifications">
+                        <label class="form-check-label" for="email-notifications">Enable Email Notifications</label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notification-email" class="form-label">Notification Email</label>
+                        <input type="email" class="form-control" id="notification-email" name="email">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notification Events</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="task-completed" name="task_completed">
+                            <label class="form-check-label" for="task-completed">Task Completed</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="task-failed" name="task_failed">
+                            <label class="form-check-label" for="task-failed">Task Failed</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="daily-summary" name="daily_summary">
+                            <label class="form-check-label" for="daily-summary">Daily Summary</label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                        <button type="button" id="test-notification" class="btn btn-outline-info">Send Test Notification</button>
+                    </div>
+                </form>
+                <div id="notification-result" class="mt-3" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h2>Notification Information</h2>
+            </div>
+            <div class="card-body">
+                <p>Notifications help you stay informed about your automation tasks:</p>
+                <ul>
+                    <li><strong>Task Completed</strong> - Receive a notification when a task completes successfully</li>
+                    <li><strong>Task Failed</strong> - Receive a notification when a task fails</li>
+                    <li><strong>Daily Summary</strong> - Receive a daily summary of all your tasks</li>
+                </ul>
+                <p>Notifications are sent to the email address specified in your settings.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationForm = document.getElementById('notification-form');
+        const notificationResult = document.getElementById('notification-result');
+        const testNotificationButton = document.getElementById('test-notification');
+        
+        // Load current settings
+        loadSettings();
+        
+        // Save settings
+        notificationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                email_notifications: document.getElementById('email-notifications').checked,
+                task_completed: document.getElementById('task-completed').checked,
+                task_failed: document.getElementById('task-failed').checked,
+                daily_summary: document.getElementById('daily-summary').checked,
+                email: document.getElementById('notification-email').value
+            };
+            
+            // Show loading message
+            notificationResult.innerHTML = '<div class="alert alert-info">Saving settings...</div>';
+            notificationResult.style.display = 'block';
+            
+            // Save settings
+            fetch('/notification/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    notificationResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                } else {
+                    notificationResult.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                notificationResult.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        });
+        
+        // Test notification
+        testNotificationButton.addEventListener('click', function() {
+            // Show loading message
+            notificationResult.innerHTML = '<div class="alert alert-info">Sending test notification...</div>';
+            notificationResult.style.display = 'block';
+            
+            // Send test notification
+            fetch('/notification/test', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    notificationResult.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                } else {
+                    notificationResult.innerHTML = `<div class="alert alert-success">Test notification sent to ${data.email}</div>`;
+                }
+            })
+            .catch(error => {
+                notificationResult.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        });
+        
+        // Load settings
+        function loadSettings() {
+            fetch('/notification/settings')
+                .then(response => response.json())
+                .then(data => {
+                    // Populate form
+                    document.getElementById('email-notifications').checked = data.email_notifications;
+                    document.getElementById('task-completed').checked = data.task_completed;
+                    document.getElementById('task-failed').checked = data.task_failed;
+                    document.getElementById('daily-summary').checked = data.daily_summary;
+                    document.getElementById('notification-email').value = data.email;
+                })
+                .catch(error => {
+                    console.error('Error loading notification settings:', error);
+                    notificationResult.innerHTML = `<div class="alert alert-danger">Error loading settings: ${error.message}</div>`;
+                    notificationResult.style.display = 'block';
+                });
+        }
+    });
+</script>
+{% endblock %}
