@@ -197,25 +197,3 @@ To add a new feature to the application:
 3. Add routes, templates, and static files as needed
 4. Update the documentation
 
-### Running Tests
-
-```
-pytest
-```
-
-## Troubleshooting
-
-### Common Issues
-
-- **Celery worker not processing tasks**: Ensure Redis server is running and the Celery worker is started
-- **Database migration errors**: Check the database connection and ensure the database is accessible
-- **Authentication issues**: Clear browser cookies and try logging in again
-
-### Logging
-
-The application logs are stored in the `logs` directory. Check the logs for detailed error information.
-
-### Support
-
-For additional support, please contact the development team.
-"# Automation-Web-Application" 
