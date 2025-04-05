@@ -211,11 +211,3 @@ pytest
 - **Database migration errors**: Check the database connection and ensure the database is accessible
 - **Authentication issues**: Clear browser cookies and try logging in again
 
-### Logging
-
-The application logs are stored in the `logs` directory. Check the logs for detailed error information.
-
-### Support
-
-For additional support, please contact the development team.
-"# Automation-Web-Application" 
