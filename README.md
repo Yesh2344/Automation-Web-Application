@@ -220,4 +220,4 @@ The application logs are stored in the `logs` directory. Check the logs for deta
 For additional support, please contact the development team.
 "# Automation-Web-Application" 
 
-##
+## Copyrights
