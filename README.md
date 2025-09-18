@@ -1,5 +1,6 @@
 # Automation Web App Documentation
 
+## Overview
 
 The Automation Web App is a powerful web application built with Flask and Celery that allows users to create, manage, and automate tasks. The application features a comprehensive user authentication system, task management with priority and type classification, automated task processing, and advanced features like data visualization, export/import functionality, webhook integration, and notification system.
 
