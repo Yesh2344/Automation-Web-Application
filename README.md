@@ -18,7 +18,6 @@ The Automation Web App is a powerful web application built with Flask and Celery
 ### Prerequisites
 
 - Python 3.10 or higher
-- Redis server (for Celery task queue)
 - SQLite (default) or other database supported by SQLAlchemy
 
 ### Setup Instructions
