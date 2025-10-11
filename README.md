@@ -212,6 +212,7 @@ pytest
 
 ### Logging
 
+The application logs are stored in the `logs` directory. Check the logs for detailed error information.
 
 ### Support
 
