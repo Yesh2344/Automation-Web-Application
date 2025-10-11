@@ -13,7 +13,6 @@ The Automation Web App is a powerful web application built with Flask and Celery
 5. [Development Guide](#development-guide)
 6. [Troubleshooting](#troubleshooting)
 
-## Installation
 
 ### Prerequisites
 - Python 3.10 or higher
