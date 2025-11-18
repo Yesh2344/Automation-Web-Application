@@ -50,6 +50,7 @@ def create_celery_app(app=None):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
+# Added comment
     
     celery.Task = ContextTask
     return celery
