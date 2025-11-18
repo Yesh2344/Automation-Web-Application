@@ -35,6 +35,7 @@ def create_app(config_class=Config):
     
     # Ensure the instance folder exists
     try:
+# Added comment
         os.makedirs(app.instance_path)
     except OSError:
         pass
