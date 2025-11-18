@@ -23,6 +23,7 @@ def log_task_event(task_id, status, message):
             message=message
         )
         db.session.add(log_entry)
+# Added comment
         db.session.commit()
         logger.info(f"Task {task_id} - {status}: {message}")
         return log_entry
